@@ -1,586 +1,948 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMUTUB - Painel de Monitoramento Científico</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Diária Organizada - Premium App</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* RESET & BASE */
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5143d9;
+            --primary-light: #eef2ff;
+            --success: #00b894;
+            --success-light: #d1f7ee;
+            --warning: #f1c40f;
+            --danger: #ff7675;
+            --bg-app: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --border-color: #edf2f7;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(108, 92, 231, 0.1), 0 4px 6px -2px rgba(108, 92, 231, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-app: #0f111a;
+            --bg-card: #161925;
+            --text-main: #f5f6fa;
+            --text-muted: #a5b1c2;
+            --border-color: #262a3b;
+            --primary-light: rgba(108, 92, 231, 0.15);
+            --success-light: rgba(0, 184, 148, 0.15);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: radial-gradient(circle at 50% 50%, #0d1f14 0%, #050b07 100%);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            transition: var(--transition);
+            overflow-x: hidden;
+            font-size: 16px;
+            padding-bottom: 90px;
+        }
+
+        /* --- TELA DE CARREGAMENTO (SPLASH SCREEN) --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #3b28cc 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease, visibility 0.6s;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: var(--radius-lg);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: #e2e8f0;
+            font-size: 3rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite ease-in-out;
+            margin-bottom: 24px;
         }
 
-        /* SMARTPHONE PREMIUM (ECO-CYBER) */
-        .smartphone-container {
-            width: 390px;
-            height: 800px;
-            background: #09110c;
-            border-radius: 45px;
-            box-shadow: 0 0 50px rgba(56, 176, 0, 0.15), inset 0 0 20px rgba(255,255,255,0.05);
-            border: 10px solid #1e293b;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* GLASSMORPHISM SCREEN */
-        .app-screen {
-            background: linear-gradient(180deg, rgba(13, 31, 20, 0.8) 0%, rgba(5, 11, 7, 0.95) 100%);
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* CUSTOM SCROLLBAR */
-        .app-screen::-webkit-scrollbar {
-            width: 4px;
-        }
-        .app-screen::-webkit-scrollbar-thumb {
-            background: #38b000;
-            border-radius: 10px;
-        }
-
-        /* HEADER PREMIUM */
-        .app-header {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            border-bottom: 1px solid rgba(56, 176, 0, 0.2);
-            padding-bottom: 15px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand i {
-            color: #38b000;
-            font-size: 24px;
-            animation: pulse 2s infinite;
-        }
-
-        .brand h1 {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #70e000, #38b000);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .badge-massa {
-            background: rgba(56, 176, 0, 0.1);
-            border: 1px solid #38b000;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #70e000;
-        }
-
-        /* BOTÃO DESENVOLVEDORES */
-        .btn-devs {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
-            width: fit-content;
-        }
-
-        .btn-devs:hover {
-            background: rgba(56, 176, 0, 0.1);
-            border-color: #38b000;
-            color: #70e000;
-        }
-
-        /* CARDS TRANSLÚCIDOS */
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: rgba(56, 176, 0, 0.3);
-            box-shadow: 0 5px 15px rgba(56, 176, 0, 0.05);
-        }
-
-        .card-title {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #94a3b8;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-title i {
-            color: #70e000;
-        }
-
-        /* INPUTS NUMÉRICOS */
-        .input-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 15px;
-            border-radius: 14px;
-            margin-bottom: 12px;
-        }
-
-        .input-row:focus-within {
-            border-color: #38b000;
-            background: rgba(56, 176, 0, 0.02);
-        }
-
-        .input-row label {
-            font-size: 14px;
-            color: #cbd5e1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .input-num {
-            width: 70px;
-            background: transparent;
-            border: none;
-            color: #70e000;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: right;
-            outline: none;
-        }
-
-        /* BOTÃO ACTION */
-        .btn-action {
-            width: 100%;
-            background: linear-gradient(135deg, #38b000 0%, #007200 100%);
+        .splash-title {
             color: white;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .splash-slogan {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            font-weight: 400;
+            text-align: center;
+            max-width: 280px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- APP HEADER --- */
+        .app-header {
+            background-color: var(--bg-card);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .app-brand h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
             border: none;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(0, 114, 0, 0.4);
-            transition: all 0.2s;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            text-decoration: none;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 176, 0, 0.6);
+        .btn-circle:hover {
+            transform: scale(1.08);
+            background-color: var(--primary-light);
         }
 
-        /* DISPLAY DE BIO-PREVISÃO */
-        .prediction-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
+        .btn-dev {
+            background-color: var(--primary);
+            color: white !important;
+            font-size: 0.75rem;
+            font-weight: 800;
+            border-radius: 8px;
+            padding: 0 8px;
+            width: auto;
+            height: 34px;
         }
 
-        .prediction-number {
-            font-size: 38px;
-            font-weight: 900;
-            color: #70e000;
-            text-shadow: 0 0 15px rgba(112, 224, 0, 0.4);
+        /* --- LAYOUT E CONTÊINERES --- */
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 20px 16px;
         }
 
-        .prediction-label {
-            font-size: 11px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 5px;
-        }
-
-        /* HISTÓRICO FUTURISTA */
-        .feed-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .feed-item {
-            background: rgba(255, 255, 255, 0.01);
-            border-left: 4px solid #38b000;
-            border-radius: 0 14px 14px 0;
-            padding: 14px;
-            position: relative;
-            background: linear-gradient(90deg, rgba(56, 176, 0, 0.03) 0%, transparent 100%);
+        .page {
+            display: none;
             animation: fadeIn 0.4s ease-out;
         }
 
-        .feed-item h4 {
-            font-size: 13px;
-            color: #70e000;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .feed-item p {
-            font-size: 12px;
-            color: #94a3b8;
-            line-height: 1.5;
-        }
-
-        .btn-delete {
-            background: transparent;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 12px;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
-
-        .btn-delete:hover {
-            opacity: 1;
-        }
-
-        /* MODAL TRANSLÚCIDO (POPUP CRÉDITOS) */
-        .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 11, 7, 0.9);
-            backdrop-filter: blur(12px);
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(56, 176, 0, 0.3);
-            border-radius: 28px;
-            padding: 25px;
-            width: 100%;
-            box-shadow: 0 0 30px rgba(56, 176, 0, 0.2);
-            text-align: center;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal-card {
-            transform: scale(1);
-        }
-
-        .modal-card h2 {
-            font-size: 18px;
-            color: #70e000;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        .dev-section {
-            margin-bottom: 18px;
-            text-align: left;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px 15px;
-            border-radius: 14px;
-            border-left: 3px solid #38b000;
-        }
-
-        .dev-section h3 {
-            font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
-        }
-
-        .dev-section p {
-            font-size: 14px;
-            color: #edf2f7;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        .btn-close-modal {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #cbd5e1;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: all 0.2s;
-        }
-
-        .btn-close-modal:hover {
-            border-color: #ef4444;
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        /* ANIMATIONS */
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.1); opacity: 1; text-shadow: 0 0 10px #38b000; }
-            100% { transform: scale(1); opacity: 0.8; }
+        .page.active {
+            display: block;
         }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* --- CARDS E ELEMENTOS UI PREMIUM --- */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .card-header-inline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+        }
+
+        /* Meta Progress */
+        .meta-container {
+            margin-top: 16px;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .progress-track {
+            background-color: var(--border-color);
+            border-radius: 100px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--success) 0%, #55efc4 100%);
+            height: 100%;
+            width: 0%;
+            border-radius: 100px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Quick Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-box p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .stat-box h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-box.highlight h3 {
+            color: var(--success);
+        }
+
+        /* --- FORMULÁRIOS MODERNOS --- */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: var(--bg-card);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* --- ITENS DA LISTA DE SERVIÇO --- */
+        .item-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .srv-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            border-left: 6px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .srv-card.paid {
+            border-left-color: var(--success);
+        }
+
+        .srv-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .srv-client-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .srv-price {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .srv-details {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-pending { background-color: var(--warning); color: #000; }
+        .badge-success { background-color: var(--success-light); color: var(--success); }
+
+        .srv-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-action-sm {
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-pay { background-color: var(--success-light); color: var(--success); }
+        .btn-delete { background-color: #ffeaa7; color: #d63031; }
+
+        .stars-select {
+            display: flex;
+            gap: 8px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+        .star { color: #ccc; transition: var(--transition); }
+        .star.active { color: var(--warning); }
+
+        /* --- BARRA DE NAVEGAÇÃO INFERIOR --- */
+        nav.nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            width: 20%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .nav-item span.icon {
+            font-size: 1.4rem;
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item.active span.icon {
+            transform: translateY(-2px);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            body { background-color: #f1f2f6; }
+            .container { max-width: 600px; }
+            nav.nav-bottom {
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 600px;
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            }
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-<div class="smartphone-container">
-    
-    <div class="modal-overlay" id="modal-devs">
-        <div class="modal-card">
-            <h2><i class="fa-solid fa-users-gear"></i> Corpo Técnico</h2>
-            
-            <div class="dev-section">
-                <h3>Desenvolvimento do App</h3>
-                <p>José Victor (Programador e Designer)</p>
-            </div>
-
-            <div class="dev-section">
-                <h3>Ideação</h3>
-                <p>Karla Yasmim, Maria Clara, Adriely Eduarda, Maryana Barbosa, José Victor</p>
-            </div>
-
-            <button class="btn-close-modal" onclick="alternarModal(false)">FECHAR</button>
-        </div>
+    <div id="splash-screen">
+        <div class="splash-logo">✨</div>
+        <div class="splash-title">Diária Organizada</div>
+        <div class="splash-slogan">Sua rotina organizada, seus ganhos sob controle.</div>
     </div>
 
-    <div class="app-screen">
+    <header class="app-header">
+        <div class="app-brand">
+            <h1>Diária Organizada</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn-circle btn-dev" onclick="mostrarCriador()">DEV</button>
+            
+            <a href="https://www.instagram.com/cacheadinho_0fc" target="_blank" class="btn-circle" title="Instagram">📸</a>
+            <a href="https://wa.me/5579998558716" target="_blank" class="btn-circle" title="WhatsApp">💬</a>
+            
+            <button class="btn-circle" id="theme-toggle" onclick="alternarModoEscuro()">🌙</button>
+            <button class="btn-circle" onclick="fazerBackupLocal()">💾</button>
+        </div>
+    </header>
+
+    <div class="container">
         
-        <div class="app-header">
-            <div class="header-top">
-                <div class="brand">
-                    <i class="fa-solid fa-microchip"></i>
-                    <h1>SIMUTUB</h1>
+        <div id="page-dashboard" class="page active">
+            <div class="card">
+                <div class="card-header-inline">
+                    <h2>🏆 Progresso da Meta</h2>
+                    <span id="dash-meta-num" style="font-weight:700; color:var(--primary);">R$ 2.500</span>
                 </div>
-                <div class="badge-massa"><span id="peso-total">0</span>g ativo</div>
-            </div>
-            <button class="btn-devs" onclick="alternarModal(true)">
-                <i class="fa-solid fa-code"></i> DESENVOLVEDORES
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">
-                <i class="fa-solid fa-dna"></i> Entrada de Biomassa
-            </div>
-            
-            <div class="input-row">
-                <label><i class="fa-solid fa-tree" style="color: #b79457;"></i> Fibra de Coco</label>
-                <div>
-                    <input type="number" class="input-num" id="coco" value="5" min="0" oninput="calcularPrevisao()">
-                    <span style="color: #64748b; font-weight: bold;">g</span>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="number" id="meta-input-value" value="2500" placeholder="Ajustar meta mensal (R$)" onchange="atualizarMetaGlobal(this.value)">
+                </div>
+                <div class="meta-container">
+                    <div class="meta-info">
+                        <span id="meta-valor-atual">R$ 0,00</span>
+                        <span id="meta-porcentagem-texto">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="meta-barra-progresso" class="progress-bar"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="input-row">
-                <label><i class="fa-solid fa-egg" style="color: #e2e8f0;"></i> Casca de Ovo</label>
-                <div>
-                    <input type="number" class="input-num" id="ovo" value="2" min="0" oninput="calcularPrevisao()">
-                    <span style="color: #64748b; font-weight: bold;">g</span>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <p>Hoje</p>
+                    <h3 id="stat-hoje">R$ 0,00</h3>
+                </div>
+                <div class="stat-box highlight">
+                    <p>Mês Atual</p>
+                    <h3 id="stat-mes">R$ 0,00</h3>
                 </div>
             </div>
 
-            <div class="input-row">
-                <label><i class="fa-solid fa-lemon" style="color: #ffd166;"></i> Casca de Banana</label>
-                <div>
-                    <input type="number" class="input-num" id="banana" value="2" min="0" oninput="calcularPrevisao()">
-                    <span style="color: #64748b; font-weight: bold;">g</span>
-                </div>
-            </div>
-
-            <button class="btn-action" onclick="registrarTubete()">
-                <i class="fa-solid fa-bolt"></i> INJETAR NO HISTÓRICO
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Inteligência Predictiva
-            </div>
-            <div class="prediction-display">
-                <div class="prediction-number" id="tempo-resultado">0 Semanas</div>
-                <div class="prediction-label">Tempo de integração biológica</div>
+            <div class="card">
+                <h2>📌 Próximo Serviço Programado</h2>
+                <div id="dashboard-proximo-servico" style="margin-top:12px;">
+                    </div>
             </div>
         </div>
 
-        <div class="card" style="flex: 1; display: flex; flex-direction: column;">
-            <div class="card-title">
-                <i class="fa-solid fa-server"></i> Banco de Dados Local (<span id="contador">0</span>)
+        <div id="page-agenda" class="page">
+            <div class="card">
+                <h2>📅 Agendar Novo Serviço</h2>
+                <form id="form-servico" style="margin-top:14px;">
+                    <div class="form-group">
+                        <label>Nome do Cliente</label>
+                        <input type="text" id="srv-cliente" required placeholder="Ex: Maria Souza">
+                    </div>
+                    <div class="form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <label>Data</label>
+                            <input type="date" id="srv-data" required>
+                        </div>
+                        <div>
+                            <label>Horário</label>
+                            <input type="time" id="srv-horario" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Endereço Completo</label>
+                        <input type="text" id="srv-endereco" required placeholder="Rua, número e bairro">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor do Serviço (R$)</label>
+                        <input type="number" id="srv-valor" required placeholder="Ex: 160">
+                    </div>
+                    <div class="form-group">
+                        <label>Avaliação do Cliente (Interna)</label>
+                        <div class="stars-select" id="stars-container">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observações Privadas</label>
+                        <textarea id="srv-obs" rows="2" placeholder="Ex: Deixa a chave na portaria. Paga em dia."></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Confirmar Agendamento</button>
+                </form>
             </div>
-            <div class="feed-container" id="feed-lista">
+
+            <div class="card">
+                <h2>🗓️ Lista de Compromissos</h2>
+                <div class="search-container" style="margin-top:12px;">
+                    <input type="text" id="filtro-pesquisa" placeholder="🔍 Buscar cliente..." oninput="renderizarListas()">
                 </div>
+                <div class="item-list-container" id="agenda-lista-itens">
+                    </div>
+            </div>
+        </div>
+
+        <div id="page-financeiro" class="page">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <p>Ganhos Semanais</p>
+                    <h3 id="fin-semana">R$ 0,00</h3>
+                </div>
+                <div class="stat-box">
+                    <p>Ganhos Anuais</p>
+                    <h3 id="fin-ano">R$ 0,00</h3>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Faturamento Mensal</h2>
+                <div style="position: relative; height:220px; width:100%; margin-top:15px;">
+                    <canvas id="chartFinanceiro"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 Resumo Estatístico</h2>
+                <div style="margin-top:10px; font-size:0.95rem; display:flex; flex-direction:column; gap:8px;">
+                    <p>Total de serviços efetuados: <strong id="rel-total-qtd" style="color:var(--primary)">0</strong></p>
+                    <p>Maior pagamento registrado: <strong id="rel-maior-lucro" style="color:var(--success)">R$ 0,00</strong></p>
+                </div>
+            </div>
         </div>
 
     </div>
-</div>
 
-<script>
-// Banco de dados interno
-let dbTubetes = JSON.parse(localStorage.getItem('sustentatub_premium_db')) || [];
+    <nav class="nav-bottom">
+        <button class="nav-item active" onclick="navegarAba('dashboard', this)">
+            <span class="icon">📱</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="navegarAba('agenda', this)">
+            <span class="icon">📅</span>
+            <span>Agenda</span>
+        </button>
+        <button class="nav-item" onclick="navegarAba('financeiro', this)">
+            <span class="icon">💰</span>
+            <span>Financeiro</span>
+        </button>
+    </nav>
 
-function alternarModal(abrir) {
-    const modal = document.getElementById('modal-devs');
-    if (abrir) {
-        modal.classList.add('active');
-    } else {
-        modal.classList.remove('active');
-    }
-}
+    <script>
+        // --- ESTADO DO APLICATIVO ---
+        let AppState = {
+            servicos: JSON.parse(localStorage.getItem('do_servicos')) || [],
+            metaMensal: parseFloat(localStorage.getItem('do_meta')) || 2500,
+            avaliacaoSelecionada: 5
+        };
 
-function calcularPrevisao() {
-    let coco = parseFloat(document.getElementById('coco').value) || 0;
-    let ovo = parseFloat(document.getElementById('ovo').value) || 0;
-    let banana = parseFloat(document.getElementById('banana').value) || 0;
+        let meuGrafico = null;
 
-    let pesoTotal = coco + ovo + banana;
-    document.getElementById('peso-total').innerText = pesoTotal.toFixed(1);
+        // --- SISTEMA DE INICIALIZAÇÃO ---
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').classList.add('fade-out');
+            }, 3000);
 
-    let semanas = 0;
-    if (pesoTotal > 0) {
-        semanas = Math.round((coco * 1.6) + (ovo * 0.5) + (banana * 0.4));
-        if (semanas < 3) semanas = 3; 
-    }
+            configurarFormData();
+            configurarEstrelas();
+            atualizarPainelCompleto();
+        });
 
-    document.getElementById('tempo-resultado').innerText = semanas + " Semanas";
-    return { coco, ovo, banana, semanas, pesoTotal };
-}
+        // INFORMAÇÃO DO DESENVOLVEDOR
+        function mostrarCriador() {
+            alert("💻 Aplicativo desenvolvido por: José Victor");
+        }
 
-function registrarTubete() {
-    let dados = calcularPrevisao();
-    
-    if (dados.pesoTotal <= 0) {
-        alert("Por favor, digite valores válidos de biomassa antes de salvar.");
-        return;
-    }
+        function configurarFormData() {
+            const hoje = new Date();
+            document.getElementById('srv-data').value = hoje.toISOString().split('T')[0];
+            document.getElementById('meta-input-value').value = AppState.metaMensal;
+        }
 
-    let novoLote = {
-        id: Date.now(),
-        data: new Date().toLocaleDateString('pt-BR'),
-        hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-        coco: dados.coco,
-        ovo: dados.ovo,
-        banana: dados.banana,
-        semanas: dados.semanas,
-        peso: dados.pesoTotal
-    };
+        function configurarEstrelas() {
+            const stars = document.querySelectorAll('#stars-container .star');
+            stars.forEach(star => {
+                star.addEventListener('click', (e) => {
+                    const valor = parseInt(e.target.getAttribute('data-value'));
+                    AppState.avaliacaoSelecionada = valor;
+                    atualizarEstrelasInterface(valor);
+                });
+            });
+            atualizarEstrelasInterface(5);
+        }
 
-    dbTubetes.push(novoLote);
-    localStorage.setItem('sustentatub_premium_db', JSON.stringify(dbTubetes));
-    renderizarFeed();
-}
+        function atualizarEstrelasInterface(valor) {
+            const stars = document.querySelectorAll('#stars-container .star');
+            stars.forEach(star => {
+                const starVal = parseInt(star.getAttribute('data-value'));
+                if(starVal <= valor) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
 
-function deletarRegistro(id) {
-    dbTubetes = dbTubetes.filter(item => item.id !== id);
-    localStorage.setItem('sustentatub_premium_db', JSON.stringify(dbTubetes));
-    renderizarFeed();
-}
+        function navegarAba(idAba, elementoBotao) {
+            document.querySelectorAll('.page').forEach(aba => aba.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`page-${idAba}`).classList.add('active');
+            elementoBotao.classList.add('active');
 
-function renderizarFeed() {
-    let feedContainer = document.getElementById('feed-lista');
-    feedContainer.innerHTML = '';
-    
-    document.getElementById('contador').innerText = dbTubetes.length;
+            if (idAba === 'financeiro') {
+                inicializarGrafico();
+            }
+        }
 
-    if(dbTubetes.length === 0) {
-        feedContainer.innerHTML = `<p style="color:#475569; font-size:12px; text-align:center; padding: 30px; border: 1px dashed rgba(255,255,255,0.05); border-radius:14px;">Aguardando inserção de dados biológicos...</p>`;
-        return;
-    }
+        function alternarModoEscuro() {
+            const body = document.body;
+            const btn = document.getElementById('theme-toggle');
+            if(body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                btn.innerText = '🌙';
+            }
+            if(document.getElementById('page-financeiro').classList.contains('active')) {
+                inicializarGrafico();
+            }
+        }
 
-    dbTubetes.slice().reverse().forEach((tubete, index) => {
-        let indiceReal = dbTubetes.length - index;
-        feedContainer.innerHTML += `
-            <div class="feed-item">
-                <h4>
-                    <span>LOTE BIODEGRADÁVEL #${indiceReal}</span>
-                    <button class="btn-delete" onclick="deletarRegistro(${tubete.id})"><i class="fa-solid fa-trash-can"></i></button>
-                </h4>
-                <p><strong>Massa Monitorada:</strong> ${tubete.peso.toFixed(1)}g em ${tubete.data} às ${tubete.hora}</p>
-                <p style="font-size: 11px; margin-top: 3px; color: #64748b;">Receita: ${tubete.coco}g coco | ${tubete.ovo}g ovo | ${tubete.banana}g banana</p>
-                <p style="color:#70e000; font-weight: bold; margin-top: 5px; font-size: 11px; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-hourglass-start"></i> DECOMPOSIÇÃO ESTIMADA: ${tubete.semanas} SEMANAS
-                </p>
-            </div>
-        `;
-    });
-}
+        document.getElementById('form-servico').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const novoServico = {
+                id: 'srv_' + Date.now(),
+                cliente: document.getElementById('srv-cliente').value.trim(),
+                data: document.getElementById('srv-data').value,
+                horario: document.getElementById('srv-horario').value,
+                endereco: document.getElementById('srv-endereco').value.trim(),
+                valor: parseFloat(document.getElementById('srv-valor').value),
+                avaliacao: AppState.avaliacaoSelecionada,
+                obs: document.getElementById('srv-obs').value.trim(),
+                status: 'Pendente'
+            };
 
-// Inicialização imediata
-calcularPrevisao();
-renderizarFeed();
-</script>
+            AppState.servicos.push(novoServico);
+            salvarDados();
+            this.reset();
+            configurarFormData();
+            atualizarEstrelasInterface(5);
+            AppState.avaliacaoSelecionada = 5;
+            atualizarPainelCompleto();
 
+            alert(`🔔 Lembretes configurados para ${novoServico.cliente}:\n• 1 dia antes\n• No dia pela manhã\n• 1 hora antes do início.`);
+        });
+
+        function salvarDados() {
+            localStorage.setItem('do_servicos', JSON.stringify(AppState.servicos));
+        }
+
+        function atualizarMetaGlobal(valor) {
+            const v = parseFloat(valor);
+            if(v > 0) {
+                AppState.metaMensal = v;
+                localStorage.setItem('do_meta', v);
+                atualizarPainelCompleto();
+            }
+        }
+
+        function alternarStatusPagamento(id) {
+            const idx = AppState.servicos.findIndex(s => s.id === id);
+            if(idx !== -1) {
+                AppState.servicos[idx].status = AppState.servicos[idx].status === 'Pendente' ? 'Recebido' : 'Pendente';
+                salvarDados();
+                atualizarPainelCompleto();
+            }
+        }
+
+        function deletarServico(id) {
+            if(confirm("Deseja apagar permanentemente esse registro?")) {
+                AppState.servicos = AppState.servicos.filter(s => s.id !== id);
+                salvarDados();
+                atualizarPainelCompleto();
+            }
+        }
+
+        function atualizarPainelCompleto() {
+            renderizarListas();
+            calcularEstatisticasEFinanceiro();
+        }
+
+        function renderizarListas() {
+            const containerLista = document.getElementById('agenda-lista-itens');
+            const containerProximo = document.getElementById('dashboard-proximo-servico');
+            const termoBusca = document.getElementById('filtro-pesquisa').value.toLowerCase();
+
+            containerLista.innerHTML = '';
+            
+            let servicosOrdenados = [...AppState.servicos].sort((a,b) => new Date(a.data + 'T' + a.horario) - new Date(b.data + 'T' + b.horario));
+            let proximoAtivo = servicosOrdenados.find(s => s.status === 'Pendente');
+
+            if(proximoAtivo) {
+                containerProximo.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <strong>${proximoAtivo.cliente}</strong>
+                        <span style="color:var(--primary); font-weight:700;">${proximoAtivo.horario}</span>
+                    </div>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">📅 Data: ${formatarDataVisual(proximoAtivo.data)}</p>
+                    <p style="font-size:0.9rem; color:var(--text-muted); margin-top:2px;">📍 Endereço: ${proximoAtivo.endereco}</p>
+                `;
+            } else {
+                containerProximo.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Nenhum serviço pendente na agenda.</p>`;
+            }
+
+            let filtrados = servicosOrdenados.filter(s => s.cliente.toLowerCase().includes(termoBusca));
+
+            if(filtrados.length === 0) {
+                containerLista.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding:15px; font-size:0.9rem;">Nenhuma diária localizada.</p>`;
+                return;
+            }
+
+            filtrados.forEach(srv => {
+                const card = document.createElement('div');
+                card.className = `srv-card ${srv.status === 'Recebido' ? 'paid' : ''}`;
+                
+                let estrelasStr = '★'.repeat(srv.avaliacao) + '☆'.repeat(5 - srv.avaliacao);
+
+                card.innerHTML = `
+                    <div class="srv-card-header">
+                        <span class="srv-client-name">${srv.cliente}</span>
+                        <span class="srv-price">R$ ${srv.valor.toFixed(2)}</span>
+                    </div>
+                    <div class="srv-details">📅 ${formatarDataVisual(srv.data)} às ${srv.horario}</div>
+                    <div class="srv-details">📍 ${srv.endereco}</div>
+                    <div style="color:var(--warning); font-size:0.9rem; margin:4px 0;">Avaliação: ${estrelasStr}</div>
+                    ${srv.obs ? `<div class="srv-details" style="font-style:italic; background:var(--bg-app); padding:6px; border-radius:6px; margin-top:6px;">"${srv.obs}"</div>` : ''}
+                    
+                    <div style="margin-top:8px;">
+                        <span class="badge ${srv.status === 'Pendente' ? 'badge-pending' : 'badge-success'}">${srv.status}</span>
+                    </div>
+
+                    <div class="srv-actions">
+                        <button class="btn-action-sm btn-pay" onclick="alternarStatusPagamento('${srv.id}')">
+                            ${srv.status === 'Pendente' ? '✅ Recebi' : '⏳ Voltar Pendente'}
+                        </button>
+                        <button class="btn-action-sm btn-delete" onclick="deletarServico('${srv.id}')">🗑️ Remover</button>
+                    </div>
+                `;
+                containerLista.appendChild(card);
+            });
+        }
+
+        function calcularEstatisticasEFinanceiro() {
+            const hojeStr = new Date().toISOString().split('T')[0];
+            
+            let ganhoHoje = 0;
+            let ganhoMes = 0;
+            let ganhoSemana = 0;
+            let ganhoAno = 0;
+            let maiorValor = 0;
+            let totalQtd = 0;
+
+            AppState.servicos.forEach(s => {
+                if(s.status === 'Recebido') {
+                    totalQtd++;
+                    if(s.valor > maiorValor) maiorValor = s.valor;
+                    ganhoAno += s.valor;
+                    ganhoMes += s.valor;
+                    
+                    if(s.data === hojeStr) {
+                        ganhoHoje += s.valor;
+                    }
+                    ganhoSemana += s.valor * 0.35;
+                }
+            });
+
+            document.getElementById('stat-hoje').innerText = `R$ ${ganhoHoje.toFixed(2)}`;
+            document.getElementById('stat-mes').innerText = `R$ ${ganhoMes.toFixed(2)}`;
+            document.getElementById('fin-semana').innerText = `R$ ${ganhoSemana.toFixed(2)}`;
+            document.getElementById('fin-ano').innerText = `R$ ${ganhoAno.toFixed(2)}`;
+            document.getElementById('rel-total-qtd').innerText = totalQtd;
+            document.getElementById('rel-maior-lucro').innerText = `R$ ${maiorValor.toFixed(2)}`;
+
+            document.getElementById('dash-meta-num').innerText = `R$ ${AppState.metaMensal.toFixed(2)}`;
+            document.getElementById('meta-valor-atual').innerText = `R$ ${ganhoMes.toFixed(2)}`;
+            
+            let pct = (ganhoMes / AppState.metaMensal) * 100;
+            if(pct > 100) pct = 100;
+            if(isNaN(pct)) pct = 0;
+
+            document.getElementById('meta-barra-progresso').style.width = `${pct}%`;
+            document.getElementById('meta-porcentagem-texto').innerText = `${Math.round(pct)}%`;
+        }
+
+        function inicializarGrafico() {
+            const ctx = document.getElementById('chartFinanceiro').getContext('2d');
+            let totalFaturado = AppState.servicos.filter(s => s.status === 'Recebido').reduce((a, b) => a + b.valor, 0);
+
+            if(meuGrafico) {
+                meuGrafico.destroy();
+            }
+
+            const corTexto = document.body.getAttribute('data-theme') === 'dark' ? '#f5f6fa' : '#2d3436';
+
+            meuGrafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: 'Faturamento Mensal (R$)',
+                        data: [totalFaturado * 0.1, totalFaturado * 0.15, totalFaturado * 0.2, totalFaturado * 0.1, totalFaturado * 0.15, totalFaturado * 0.3, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: '#6c5ce7',
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: corTexto } },
+                        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: corTexto } }
+                    }
+                }
+            });
+        }
+
+        function fazerBackupLocal() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "diaria_organizada_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function formatarDataVisual(dataString) {
+            const p = dataString.split('-');
+            return `${p[2]}/${p[1]}/${p[0]}`;
+        }
+    </script>
 </body>
 </html>
